@@ -1,6 +1,6 @@
-package edu.sjsu.cmpe.henna.repository;
+package edu.sjsu.cmpe172.henna.repository;
 
-import edu.sjsu.cmpe.henna.model.HennaService;
+import edu.sjsu.cmpe172.henna.model.HennaService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

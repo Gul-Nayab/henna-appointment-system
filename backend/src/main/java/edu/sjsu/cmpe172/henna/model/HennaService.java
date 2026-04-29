@@ -1,4 +1,4 @@
-package edu.sjsu.cmpe.henna.model;
+package edu.sjsu.cmpe172.henna.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

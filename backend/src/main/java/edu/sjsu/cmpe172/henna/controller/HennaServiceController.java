@@ -1,7 +1,7 @@
-package edu.sjsu.cmpe.henna.controller;
+package edu.sjsu.cmpe172.henna.controller;
 
-import edu.sjsu.cmpe.henna.model.HennaService;
-import edu.sjsu.cmpe.henna.service.HennaServiceService;
+import edu.sjsu.cmpe172.henna.model.HennaService;
+import edu.sjsu.cmpe172.henna.service.HennaServiceService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,11 +13,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/services")
 @CrossOrigin(origins = "http://localhost:3000")
-public class ServiceController {
+public class HennaServiceController {
 
     private final HennaServiceService hennaServiceService;
 
-    public ServiceController(HennaServiceService hennaServiceService) {
+    public HennaServiceController(HennaServiceService hennaServiceService) {
         this.hennaServiceService = hennaServiceService;
     }
 

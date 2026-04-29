@@ -1,7 +1,7 @@
-package edu.sjsu.cmpe.henna.service;
+package edu.sjsu.cmpe172.henna.service;
 
-import edu.sjsu.cmpe.henna.model.HennaService;
-import edu.sjsu.cmpe.henna.repository.HennaServiceRepository;
+import edu.sjsu.cmpe172.henna.model.HennaService;
+import edu.sjsu.cmpe172.henna.repository.HennaServiceRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
