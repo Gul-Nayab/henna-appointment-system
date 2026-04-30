@@ -17,9 +17,14 @@ public class AppointmentController {
         this.service = service;
     }
 
-    @GetMapping
+    @GetMapping("/")
     public List<Appointment> getAppointments() {
         return service.getAllAppointments();
+    }
+
+    @PostMapping("/")
+    public Appointment createAppointment(@RequestBody Appointment appointment) {
+        return service.createAppointment(appointment);
     }
 
     @GetMapping("/{id}")
@@ -27,8 +32,13 @@ public class AppointmentController {
         return service.getAppointmentById(id);
     }
 
-    @PostMapping
-    public Appointment createAppointment(@RequestBody Appointment appointment) {
-        return service.createAppointment(appointment);
+    @GetMapping("/customer/{customerId}")
+    public List<Appointment> getAppointmentsByCustomerId(@PathVariable Integer customerId) {
+        return service.getAppointmentsByCustomerId(customerId);
+    }
+
+    @GetMapping("/artists/{artistId}")
+    public List<Appointment> getAppointmentsByArtistId(@PathVariable Integer artistId) {
+        return service.getAppointmentsByArtistId(artistId);
     }
 }
