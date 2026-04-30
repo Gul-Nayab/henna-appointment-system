@@ -1,13 +1,13 @@
 package edu.sjsu.cmpe172.henna.controller;
 
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-
 import edu.sjsu.cmpe172.henna.model.Appointment;
 import edu.sjsu.cmpe172.henna.service.AppointmentService;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/appointments")
+@RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:3000")
 public class AppointmentController {
 
@@ -17,28 +17,40 @@ public class AppointmentController {
         this.service = service;
     }
 
-    @GetMapping("/")
+    @GetMapping("/appointments")
     public List<Appointment> getAppointments() {
         return service.getAllAppointments();
     }
 
-    @PostMapping("/")
-    public Appointment createAppointment(@RequestBody Appointment appointment) {
-        return service.createAppointment(appointment);
-    }
-
-    @GetMapping("/{id}")
+    @GetMapping("/appointments/{id}")
     public Appointment getAppointmentById(@PathVariable Integer id) {
         return service.getAppointmentById(id);
     }
 
-    @GetMapping("/customer/{customerId}")
+    @GetMapping("/artists/{artistId}/appointments")
+    public List<Appointment> getAppointmentsByArtistId(@PathVariable Integer artistId) {
+        return service.getAppointmentsByArtistId(artistId);
+    }
+
+    @GetMapping("/customers/{customerId}/appointments")
     public List<Appointment> getAppointmentsByCustomerId(@PathVariable Integer customerId) {
         return service.getAppointmentsByCustomerId(customerId);
     }
 
-    @GetMapping("/artists/{artistId}")
-    public List<Appointment> getAppointmentsByArtistId(@PathVariable Integer artistId) {
-        return service.getAppointmentsByArtistId(artistId);
+    @PostMapping("/appointments")
+    public Appointment createAppointment(@RequestBody Appointment appointment) {
+        return service.createAppointment(appointment);
+    }
+
+    @PutMapping("/appointments/{id}")
+    public Appointment updateAppointment(
+            @PathVariable Integer id,
+            @RequestBody Appointment updatedAppointment) {
+        return service.updateAppointment(id, updatedAppointment);
+    }
+
+    @DeleteMapping("/appointments/{id}")
+    public void deleteAppointment(@PathVariable Integer id) {
+        service.deleteAppointment(id);
     }
 }

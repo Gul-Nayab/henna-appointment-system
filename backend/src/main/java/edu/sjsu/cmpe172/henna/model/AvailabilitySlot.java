@@ -25,6 +25,9 @@ public class AvailabilitySlot {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
+    @Column(name = "is_booked", nullable = false)
+    private Boolean isBooked;
+
     public AvailabilitySlot() {
     }
 
@@ -66,5 +69,13 @@ public class AvailabilitySlot {
 
     public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
+    }
+
+    public Boolean getIsBooked() {
+        return isBooked;
+    }
+
+    public void setIsBooked(Boolean isBooked) {
+        this.isBooked = isBooked;
     }
 }

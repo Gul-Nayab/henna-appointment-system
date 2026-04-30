@@ -5,7 +5,6 @@ import edu.sjsu.cmpe172.henna.service.AvailabilitySlotService;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -34,51 +33,37 @@ public class AvailabilitySlotController {
         return service.getSlotsByArtistId(artistId);
     }
 
-    @GetMapping("/artists/{artistId}/availability-slots/date/{date}")
-    public List<AvailabilitySlot> getSlotsByArtistIdAndDate(
+    @GetMapping("/artists/{artistId}/availability-slots/free")
+    public List<AvailabilitySlot> getFreeSlotsByArtistId(@PathVariable Integer artistId) {
+        return service.getFreeSlotsByArtistId(artistId);
+    }
+
+    @GetMapping("/artists/{artistId}/availability-slots/free/{date}")
+    public List<AvailabilitySlot> getFreeSlotsByArtistIdAndDate(
             @PathVariable Integer artistId,
             @PathVariable LocalDate date) {
-        return service.getSlotsByArtistIdAndDate(artistId, date);
+        return service.getFreeSlotsByArtistIdAndDate(artistId, date);
     }
 
-    @PostMapping("/availability-slots")
-    public AvailabilitySlot createSlot(@RequestBody AvailabilitySlot slot) {
-        return service.createSlot(slot);
+    @PostMapping("/artists/{artistId}/availability-slots")
+    public AvailabilitySlot createSlotForArtist(
+            @PathVariable Integer artistId,
+            @RequestBody AvailabilitySlot slot) {
+        return service.createSlotForArtist(artistId, slot);
     }
 
-    @DeleteMapping("/availability-slots/{id}")
-    public void deleteSlot(@PathVariable Integer id) {
-        service.deleteSlot(id);
-    }
-
-    @PostMapping("/availability-slots/{slotId}/split")
-    public List<AvailabilitySlot> splitSlotForAppointment(
+    @PutMapping("/artists/{artistId}/availability-slots/{slotId}")
+    public AvailabilitySlot updateSlotForArtist(
+            @PathVariable Integer artistId,
             @PathVariable Integer slotId,
-            @RequestBody SplitSlotRequest request) {
-        return service.splitSlotForAppointment(
-                slotId,
-                request.getAppointmentStart(),
-                request.getAppointmentEnd());
+            @RequestBody AvailabilitySlot updatedSlot) {
+        return service.updateSlotForArtist(artistId, slotId, updatedSlot);
     }
 
-    public static class SplitSlotRequest {
-        private LocalTime appointmentStart;
-        private LocalTime appointmentEnd;
-
-        public LocalTime getAppointmentStart() {
-            return appointmentStart;
-        }
-
-        public void setAppointmentStart(LocalTime appointmentStart) {
-            this.appointmentStart = appointmentStart;
-        }
-
-        public LocalTime getAppointmentEnd() {
-            return appointmentEnd;
-        }
-
-        public void setAppointmentEnd(LocalTime appointmentEnd) {
-            this.appointmentEnd = appointmentEnd;
-        }
+    @DeleteMapping("/artists/{artistId}/availability-slots/{slotId}")
+    public void deleteSlotForArtist(
+            @PathVariable Integer artistId,
+            @PathVariable Integer slotId) {
+        service.deleteSlotForArtist(artistId, slotId);
     }
 }

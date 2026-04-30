@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AvailabilitySlotService {
@@ -32,26 +32,71 @@ public class AvailabilitySlotService {
         return repo.findByArtistId(artistId);
     }
 
-    public List<AvailabilitySlot> getSlotsByArtistIdAndDate(Integer artistId, LocalDate date) {
-        return repo.findByArtistIdAndDate(artistId, date);
+    public List<AvailabilitySlot> getFreeSlotsByArtistId(Integer artistId) {
+        return repo.findByArtistIdAndIsBookedFalse(artistId);
     }
 
-    public AvailabilitySlot createSlot(AvailabilitySlot slot) {
-        validateSlotTimes(slot.getStartTime(), slot.getEndTime());
-        return repo.save(slot);
-    }
-
-    public void deleteSlot(Integer id) {
-        AvailabilitySlot slot = getSlotById(id);
-        repo.delete(slot);
+    public List<AvailabilitySlot> getFreeSlotsByArtistIdAndDate(Integer artistId, LocalDate date) {
+        return repo.findByArtistIdAndDateAndIsBookedFalse(artistId, date);
     }
 
     @Transactional
-    public List<AvailabilitySlot> splitSlotForAppointment(
+    public AvailabilitySlot createSlotForArtist(Integer artistId, AvailabilitySlot slot) {
+        validateSlotTimes(slot.getStartTime(), slot.getEndTime());
+
+        slot.setSlotId(null);
+        slot.setArtistId(artistId);
+        slot.setIsBooked(false);
+
+        return repo.save(slot);
+    }
+
+    @Transactional
+    public AvailabilitySlot updateSlotForArtist(Integer artistId, Integer slotId, AvailabilitySlot updatedSlot) {
+        AvailabilitySlot existing = getSlotById(slotId);
+
+        if (!existing.getArtistId().equals(artistId)) {
+            throw new RuntimeException("Artist does not own this slot.");
+        }
+
+        if (Boolean.TRUE.equals(existing.getIsBooked())) {
+            throw new RuntimeException("Booked slots cannot be directly edited.");
+        }
+
+        validateSlotTimes(updatedSlot.getStartTime(), updatedSlot.getEndTime());
+
+        existing.setDate(updatedSlot.getDate());
+        existing.setStartTime(updatedSlot.getStartTime());
+        existing.setEndTime(updatedSlot.getEndTime());
+
+        return repo.save(existing);
+    }
+
+    @Transactional
+    public void deleteSlotForArtist(Integer artistId, Integer slotId) {
+        AvailabilitySlot existing = getSlotById(slotId);
+
+        if (!existing.getArtistId().equals(artistId)) {
+            throw new RuntimeException("Artist does not own this slot.");
+        }
+
+        if (Boolean.TRUE.equals(existing.getIsBooked())) {
+            throw new RuntimeException("Booked slots cannot be deleted.");
+        }
+
+        repo.delete(existing);
+    }
+
+    @Transactional
+    public AvailabilitySlot bookWithinSlot(
             Integer slotId,
             LocalTime appointmentStart,
             LocalTime appointmentEnd) {
         AvailabilitySlot originalSlot = getSlotById(slotId);
+
+        if (Boolean.TRUE.equals(originalSlot.getIsBooked())) {
+            throw new RuntimeException("Selected slot is already booked.");
+        }
 
         validateSlotTimes(appointmentStart, appointmentEnd);
 
@@ -60,36 +105,72 @@ public class AvailabilitySlotService {
             throw new RuntimeException("Appointment time is outside the selected availability slot.");
         }
 
-        if (!appointmentStart.isBefore(appointmentEnd)) {
-            throw new RuntimeException("Appointment start time must be before end time.");
-        }
+        LocalTime oldStart = originalSlot.getStartTime();
+        LocalTime oldEnd = originalSlot.getEndTime();
 
-        List<AvailabilitySlot> newSlots = new ArrayList<>();
-
-        // Free time before appointment
-        if (appointmentStart.isAfter(originalSlot.getStartTime())) {
+        if (appointmentStart.isAfter(oldStart)) {
             AvailabilitySlot beforeSlot = new AvailabilitySlot();
             beforeSlot.setArtistId(originalSlot.getArtistId());
             beforeSlot.setDate(originalSlot.getDate());
-            beforeSlot.setStartTime(originalSlot.getStartTime());
+            beforeSlot.setStartTime(oldStart);
             beforeSlot.setEndTime(appointmentStart);
-            newSlots.add(repo.save(beforeSlot));
+            beforeSlot.setIsBooked(false);
+            repo.save(beforeSlot);
         }
 
-        // Free time after appointment
-        if (appointmentEnd.isBefore(originalSlot.getEndTime())) {
+        if (appointmentEnd.isBefore(oldEnd)) {
             AvailabilitySlot afterSlot = new AvailabilitySlot();
             afterSlot.setArtistId(originalSlot.getArtistId());
             afterSlot.setDate(originalSlot.getDate());
             afterSlot.setStartTime(appointmentEnd);
-            afterSlot.setEndTime(originalSlot.getEndTime());
-            newSlots.add(repo.save(afterSlot));
+            afterSlot.setEndTime(oldEnd);
+            afterSlot.setIsBooked(false);
+            repo.save(afterSlot);
         }
 
-        // Remove original slot after new free slots are created
-        repo.delete(originalSlot);
+        originalSlot.setStartTime(appointmentStart);
+        originalSlot.setEndTime(appointmentEnd);
+        originalSlot.setIsBooked(true);
 
-        return newSlots;
+        return repo.save(originalSlot);
+    }
+
+    @Transactional
+    public AvailabilitySlot releaseBookedSlotAndMerge(Integer slotId) {
+        AvailabilitySlot bookedSlot = getSlotById(slotId);
+
+        if (!Boolean.TRUE.equals(bookedSlot.getIsBooked())) {
+            throw new RuntimeException("Slot is not booked.");
+        }
+
+        Integer artistId = bookedSlot.getArtistId();
+        LocalDate date = bookedSlot.getDate();
+        LocalTime mergedStart = bookedSlot.getStartTime();
+        LocalTime mergedEnd = bookedSlot.getEndTime();
+
+        Optional<AvailabilitySlot> previous = repo.findByArtistIdAndDateAndEndTimeAndIsBookedFalse(artistId, date,
+                mergedStart);
+
+        if (previous.isPresent()) {
+            AvailabilitySlot prevSlot = previous.get();
+            mergedStart = prevSlot.getStartTime();
+            repo.delete(prevSlot);
+        }
+
+        Optional<AvailabilitySlot> next = repo.findByArtistIdAndDateAndStartTimeAndIsBookedFalse(artistId, date,
+                mergedEnd);
+
+        if (next.isPresent()) {
+            AvailabilitySlot nextSlot = next.get();
+            mergedEnd = nextSlot.getEndTime();
+            repo.delete(nextSlot);
+        }
+
+        bookedSlot.setStartTime(mergedStart);
+        bookedSlot.setEndTime(mergedEnd);
+        bookedSlot.setIsBooked(false);
+
+        return repo.save(bookedSlot);
     }
 
     private void validateSlotTimes(LocalTime start, LocalTime end) {
