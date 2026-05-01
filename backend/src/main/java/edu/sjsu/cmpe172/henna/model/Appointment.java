@@ -22,14 +22,17 @@ public class Appointment {
     @Column(name = "customer_id", nullable = false)
     private Integer customerId;
 
+    @Column(name = "artist_id", nullable = false)
+    private Integer artistId;
+
     @Column(name = "service_id", nullable = false)
     private Integer serviceId;
 
     @Column(name = "slot_id", nullable = false)
     private Integer slotId;
 
-    @Column(name = "status_id", nullable = false)
-    private Integer statusId;
+    @Column(name = "appointment_status", nullable = false)
+    private String appointmentStatus;
 
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
@@ -62,6 +65,14 @@ public class Appointment {
         this.customerId = customerId;
     }
 
+    public Integer getArtistId() {
+        return artistId;
+    }
+
+    public void setArtistId(Integer artistId) {
+        this.artistId = artistId;
+    }
+
     public Integer getServiceId() {
         return serviceId;
     }
@@ -78,12 +89,12 @@ public class Appointment {
         this.slotId = slotId;
     }
 
-    public Integer getStatusId() {
-        return statusId;
+    public String getAppointmentStatus() {
+        return appointmentStatus;
     }
 
-    public void setStatusId(Integer statusId) {
-        this.statusId = statusId;
+    public void setAppointmentStatus(String appointmentStatus) {
+        this.appointmentStatus = appointmentStatus;
     }
 
     public LocalTime getStartTime() {

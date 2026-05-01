@@ -49,8 +49,13 @@ public class AppointmentController {
         return service.updateAppointment(id, updatedAppointment);
     }
 
+    @PatchMapping("/appointments/{id}/cancel")
+    public Appointment cancelAppointment(@PathVariable Integer id) {
+        return service.cancelAppointment(id);
+    }
+
     @DeleteMapping("/appointments/{id}")
-    public void deleteAppointment(@PathVariable Integer id) {
-        service.deleteAppointment(id);
+    public void hardDeleteAppointment(@PathVariable Integer id) {
+        service.hardDeleteAppointment(id);
     }
 }

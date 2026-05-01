@@ -60,7 +60,7 @@ public class AvailabilitySlotService {
         }
 
         if (Boolean.TRUE.equals(existing.getIsBooked())) {
-            throw new RuntimeException("Booked slots cannot be directly edited.");
+            throw new RuntimeException("Booked slots cannot be edited.");
         }
 
         validateSlotTimes(updatedSlot.getStartTime(), updatedSlot.getEndTime());
@@ -88,10 +88,7 @@ public class AvailabilitySlotService {
     }
 
     @Transactional
-    public AvailabilitySlot bookWithinSlot(
-            Integer slotId,
-            LocalTime appointmentStart,
-            LocalTime appointmentEnd) {
+    public AvailabilitySlot bookWithinSlot(Integer slotId, LocalTime appointmentStart, LocalTime appointmentEnd) {
         AvailabilitySlot originalSlot = getSlotById(slotId);
 
         if (Boolean.TRUE.equals(originalSlot.getIsBooked())) {
@@ -102,7 +99,7 @@ public class AvailabilitySlotService {
 
         if (appointmentStart.isBefore(originalSlot.getStartTime())
                 || appointmentEnd.isAfter(originalSlot.getEndTime())) {
-            throw new RuntimeException("Appointment time is outside the selected availability slot.");
+            throw new RuntimeException("Appointment time is outside the selected slot.");
         }
 
         LocalTime oldStart = originalSlot.getStartTime();
@@ -138,10 +135,6 @@ public class AvailabilitySlotService {
     @Transactional
     public AvailabilitySlot releaseBookedSlotAndMerge(Integer slotId) {
         AvailabilitySlot bookedSlot = getSlotById(slotId);
-
-        if (!Boolean.TRUE.equals(bookedSlot.getIsBooked())) {
-            throw new RuntimeException("Slot is not booked.");
-        }
 
         Integer artistId = bookedSlot.getArtistId();
         LocalDate date = bookedSlot.getDate();

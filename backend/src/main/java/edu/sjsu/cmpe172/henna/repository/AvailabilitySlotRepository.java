@@ -14,9 +14,9 @@ public interface AvailabilitySlotRepository extends JpaRepository<AvailabilitySl
 
     List<AvailabilitySlot> findByArtistId(Integer artistId);
 
-    List<AvailabilitySlot> findByArtistIdAndDate(Integer artistId, LocalDate date);
-
     List<AvailabilitySlot> findByArtistIdAndIsBookedFalse(Integer artistId);
+
+    List<AvailabilitySlot> findByArtistIdAndDate(Integer artistId, LocalDate date);
 
     List<AvailabilitySlot> findByArtistIdAndDateAndIsBookedFalse(Integer artistId, LocalDate date);
 
