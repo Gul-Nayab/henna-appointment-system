@@ -10,23 +10,30 @@ export default function Home() {
 
   return (
     <main className='home-page'>
-      <section className='splash'>
-        <nav className='top-nav'>
+      <div className='landing-image'>
+        <Image
+          src={'/images/splash.png'}
+          alt={'multiple hands with henna on stone'}
+          fill
+          priority
+          className='bg-image'
+        />
+      </div>
+      <div className='landing'>
+        <nav className='main-nav'>
           <Link href='/' className='brand-link'>
             Henna Appointment System
           </Link>
 
           <div className='nav-actions'>
             <button
-              type='button'
-              className='nav-btn nav-btn-dark'
+              className='nav-btn btn-dark'
               onClick={() => router.push('/login')}
             >
               Login
             </button>
             <button
-              type='button'
-              className='nav-btn nav-btn-light'
+              className='nav-btn btn-light'
               onClick={() => router.push('/signup')}
             >
               Sign Up
@@ -35,18 +42,17 @@ export default function Home() {
         </nav>
 
         <div className='hero-content'>
-          <h1>Book a Henna Appointment for All You Events</h1>
+          <h1>Book a Henna Appointment for All Your Events</h1>
           <button
-            type='button'
-            className='hero-btn'
+            className='hero-btn btn-dark'
             onClick={() => router.push('/login')}
           >
             Book
           </button>
         </div>
-      </section>
+      </div>
 
-      <section className='details'>
+      <div className='details'>
         <div className='details-row'>
           <div className='details-text customer-text'>
             <h2>Customer</h2>
@@ -99,7 +105,7 @@ export default function Home() {
             </button>
           </div>
         </div>
-      </section>
+      </div>
     </main>
   );
 }
