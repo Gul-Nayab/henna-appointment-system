@@ -29,7 +29,7 @@ function formatDuration(duration: number) {
 }
 
 function ServiceCard({ service }: { service: Service }) {
-  const imageSrc = `/images/services/service_${service.type.toLowerCase()}_${service.serviceId}.png`;
+  const imageSrc = `/images/services/service_${service.type.toLowerCase()}_${service.serviceId}.jpg`;
 
   return (
     <article className='service-card'>

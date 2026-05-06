@@ -15,7 +15,7 @@ type DbUser = {
 async function getUserFromDb(username: string, password: string) {
   try {
     const response = await fetch(
-      `${process.env.BACKEND_URL}/api/users/username/${username}`,
+      `${process.env.NEXT_PUBLIC_AUTH_URL}/api/users/username/${username}`,
       { cache: 'no-store' },
     );
 
