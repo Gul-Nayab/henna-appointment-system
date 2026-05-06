@@ -1,0 +1,84 @@
+'use client';
+
+import { signOut, useSession } from 'next-auth/react';
+import { useParams, useRouter } from 'next/navigation';
+
+import Link from 'next/link';
+import Image from 'next/image';
+import { IconLogout, IconUserFilled } from '@tabler/icons-react';
+import '@/styles/navbar.css';
+
+function NavBar() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
+  const { username } = useParams() as { username: string };
+
+  return (
+    <>
+      <div className='navbar-image'>
+        <Image
+          src={'/images/splash.png'}
+          alt={'multiple hands with henna on stone'}
+          fill
+          priority
+          className='bg-image'
+        />
+      </div>
+
+      <div className='navbar'>
+        <nav className='main-nav'>
+          <Link href='/' className='brand-link'>
+            Henna Appointment System
+          </Link>
+          {status === 'authenticated' ? (
+            <div className='nav-actions'>
+              {userType === 'customer' ? (
+                <>
+                  <Link
+                    href={`/${username}/account`}
+                    title='Go to your account'
+                  >
+                    <IconUserFilled className='nav-icon' />
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href={`/${username}/account`}
+                    title='Go to your account'
+                  >
+                    <IconUserFilled className='nav-icon' />
+                  </Link>
+                </>
+              )}
+
+              <button
+                onClick={() => signOut({ callbackUrl: '/auth/login' })}
+                className='logout-btn'
+              >
+                <IconLogout className='nav-icon' />
+              </button>
+            </div>
+          ) : (
+            <div className='nav-actions'>
+              <Link href={`/`} title='Go to home page'>
+                Home
+              </Link>
+              <Link href={`/reference`} title='Go to reference page'>
+                References
+              </Link>
+              <Link href={`/login`} title='log into account'>
+                Login
+              </Link>
+              <Link href={`/signup`} title='create an account'>
+                Signup
+              </Link>
+            </div>
+          )}
+        </nav>
+      </div>
+    </>
+  );
+}
+
+export default NavBar;
