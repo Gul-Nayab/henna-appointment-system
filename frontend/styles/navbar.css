@@ -45,4 +45,24 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.35);
 }
+.nav-icon {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
 
+.nav-icon:hover {
+  transform: scale(1.1);
+}
+
+.logout-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.logout-btn:hover .nav-icon {
+  transform: scale(1.15);
+}

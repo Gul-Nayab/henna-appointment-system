@@ -5,7 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { IconLogout, IconUserFilled } from '@tabler/icons-react';
+import {
+  IconCalendarClock,
+  IconCalendarWeek,
+  IconLayout,
+  IconLogout,
+  IconUserFilled,
+} from '@tabler/icons-react';
 import '@/styles/navbar.css';
 
 function NavBar() {
@@ -31,26 +37,27 @@ function NavBar() {
           </Link>
           {status === 'authenticated' ? (
             <div className='nav-actions'>
+              <Link href={'/dashboard'} title='Go to your dashboard'>
+                <IconLayout className='nav-icon' />
+              </Link>
               {session.user.role === 'CUSTOMER' ? (
                 <>
-                  <Link
-                    href={`/${session.user.username}/account`}
-                    title='Go to your account'
-                  >
-                    <IconUserFilled className='nav-icon' />
+                  <Link href={`/book`} title='Book an appointment'>
+                    <IconCalendarWeek className='nav-icon' />
                   </Link>
                 </>
               ) : (
-                <>
-                  <Link
-                    href={`/${session.user.username}/account`}
-                    title='Go to your account'
-                  >
-                    <IconUserFilled className='nav-icon' />
-                  </Link>
-                </>
+                <></>
               )}
-
+              <Link href={`/appointments`} title='See all your appointments'>
+                <IconCalendarClock className='nav-icon' />
+              </Link>
+              <Link
+                href={`/${session.user.username}/account`}
+                title='Go to your account'
+              >
+                <IconUserFilled className='nav-icon' />
+              </Link>
               <button
                 onClick={() => signOut({ callbackUrl: '/auth/login' })}
                 className='logout-btn'
