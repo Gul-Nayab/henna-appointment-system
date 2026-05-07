@@ -1,0 +1,129 @@
+.appointments-page {
+  min-height: 100vh;
+  padding: 48px;
+  background: var(--background);
+}
+
+.appointments-header {
+  margin-bottom: 32px;
+}
+
+.appointments-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.appointments-header p {
+  color: #777;
+}
+
+.appointments-section {
+  margin-bottom: 44px;
+}
+
+.appointments-section h2 {
+  font-size: 1.4rem;
+  margin-bottom: 18px;
+}
+
+.appointments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+}
+
+.appointment-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.appointment-card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.appointment-card-header h3 {
+  font-size: 1.2rem;
+  margin-bottom: 6px;
+}
+
+.appointment-card-header p {
+  color: #777;
+}
+
+.appointment-status {
+  height: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.appointment-status.booked {
+  background: #e1f5df;
+  color: #2f7a35;
+}
+
+.appointment-status.cancelled {
+  background: #f7dddd;
+  color: #9c2929;
+}
+
+.appointment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #444;
+  line-height: 1.5;
+}
+
+.appointment-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.appointment-secondary-button,
+.appointment-danger-button {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.appointment-secondary-button {
+  background: #eeeeee;
+  color: #111;
+}
+
+.appointment-danger-button {
+  background: #2c2c2c;
+  color: white;
+}
+
+.appointments-empty,
+.appointments-error {
+  color: #777;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 18px;
+  border-radius: 10px;
+}
+
+@media (max-width: 700px) {
+  .appointments-page {
+    padding: 24px;
+  }
+
+  .appointment-card-header {
+    flex-direction: column;
+  }
+
+  .appointments-grid {
+    grid-template-columns: 1fr;
+  }
+}
