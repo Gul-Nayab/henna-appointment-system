@@ -3,6 +3,7 @@ package edu.sjsu.cmpe172.henna.service;
 import edu.sjsu.cmpe172.henna.model.Appointment;
 import edu.sjsu.cmpe172.henna.model.AvailabilitySlot;
 import edu.sjsu.cmpe172.henna.repository.AppointmentRepository;
+import edu.sjsu.cmpe172.henna.dto.AppointmentDetailsResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,14 @@ public class AppointmentService {
 
     public List<Appointment> getAppointmentsByArtistId(Integer artistId) {
         return appointmentRepo.findByArtistId(artistId);
+    }
+
+    public List<AppointmentDetailsResponse> getAppointmentDetailsByCustomerId(Integer customerId) {
+        return appointmentRepo.findAppointmentDetailsByCustomerId(customerId);
+    }
+
+    public List<AppointmentDetailsResponse> getAppointmentDetailsByArtistId(Integer artistId) {
+        return appointmentRepo.findAppointmentDetailsByArtistId(artistId);
     }
 
     @Transactional

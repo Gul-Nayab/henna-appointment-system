@@ -1,5 +1,6 @@
 package edu.sjsu.cmpe172.henna.controller;
 
+import edu.sjsu.cmpe172.henna.dto.AppointmentDetailsResponse;
 import edu.sjsu.cmpe172.henna.model.Appointment;
 import edu.sjsu.cmpe172.henna.service.AppointmentService;
 import org.springframework.web.bind.annotation.*;
@@ -28,13 +29,13 @@ public class AppointmentController {
     }
 
     @GetMapping("/artists/{artistId}/appointments")
-    public List<Appointment> getAppointmentsByArtistId(@PathVariable Integer artistId) {
-        return service.getAppointmentsByArtistId(artistId);
+    public List<AppointmentDetailsResponse> getAppointmentsByArtistId(@PathVariable Integer artistId) {
+        return service.getAppointmentDetailsByArtistId(artistId);
     }
 
     @GetMapping("/customers/{customerId}/appointments")
-    public List<Appointment> getAppointmentsByCustomerId(@PathVariable Integer customerId) {
-        return service.getAppointmentsByCustomerId(customerId);
+    public List<AppointmentDetailsResponse> getAppointmentsByCustomerId(@PathVariable Integer customerId) {
+        return service.getAppointmentDetailsByCustomerId(customerId);
     }
 
     @PostMapping("/appointments")
