@@ -2,6 +2,7 @@ package edu.sjsu.cmpe172.henna.controller;
 
 import edu.sjsu.cmpe172.henna.dto.CreateArtistRequest;
 import edu.sjsu.cmpe172.henna.dto.UserResponse;
+import edu.sjsu.cmpe172.henna.dto.ArtistResponse;
 import edu.sjsu.cmpe172.henna.model.Artist;
 import edu.sjsu.cmpe172.henna.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +21,8 @@ public class ArtistController {
     }
 
     @GetMapping
-    public List<Artist> getAllArtists() {
-        return service.getAllArtists();
+    public List<ArtistResponse> getAllArtists() {
+        return service.getArtistResponses();
     }
 
     @GetMapping("/{id}")

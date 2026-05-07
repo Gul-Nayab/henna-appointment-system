@@ -122,6 +122,10 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Artist not found."));
     }
 
+    public List<ArtistResponse> getArtistResponses() {
+        return artistRepo.findArtistResponses();
+    }
+
     @Transactional
     public UserResponse createArtist(CreateArtistRequest request) {
         validateBaseUser(request.getUsername(), request.getPassword(), request.getName(), request.getEmail(),
