@@ -1,19 +1,32 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
-import '@/styles/auth.css';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import NavBar from '@/components/Navbar';
+import '@/styles/auth.css';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    console.log({ username, password });
-  }
+  const handleSubmit = async (e: React.SubmitEvent) => {
+    e.preventDefault();
+    const res = await signIn('credentials', {
+      username: username,
+      password: password,
+      redirect: false,
+    });
+    console.log('signIn result:', res);
+    if (res?.error) {
+      alert('Invalid credentials');
+      console.error(res.error);
+      return;
+    }
+    router.push(`/dashboard`);
+  };
 
   return (
     <main className='auth-page'>

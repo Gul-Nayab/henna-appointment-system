@@ -15,13 +15,13 @@ type DbUser = {
 async function getUserFromDb(username: string, password: string) {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_AUTH_URL}/api/users/username/${username}`,
+      `${process.env.BACKEND_URL}/api/users/username/${username}`,
       { cache: 'no-store' },
     );
 
     if (!response.ok) return null;
 
-    const dbUser = (await response.json()) as DbUser;
+    const dbUser = JSON.parse(text) as DbUser;
 
     if (!dbUser?.password) return null;
 
@@ -71,16 +71,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.userId = user.id;
-        token.username = (user as any).username;
-        token.role = (user as any).role;
+        token.username = user.username;
+        token.role = user.role;
       }
 
       return token;
     },
+
     async session({ session, token }) {
-      session.user.id = token.userId as string;
-      session.user.username = token.username as string;
-      session.user.role = token.role as 'CUSTOMER' | 'ARTIST';
+      session.user.id = token.userId;
+      session.user.username = token.username;
+      session.user.role = token.role;
 
       return session;
     },

@@ -11,7 +11,6 @@ import '@/styles/navbar.css';
 function NavBar() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const { username } = useParams() as { username: string };
 
   return (
     <>
@@ -32,10 +31,10 @@ function NavBar() {
           </Link>
           {status === 'authenticated' ? (
             <div className='nav-actions'>
-              {userType === 'customer' ? (
+              {session.user.role === 'CUSTOMER' ? (
                 <>
                   <Link
-                    href={`/${username}/account`}
+                    href={`/${session.user.username}/account`}
                     title='Go to your account'
                   >
                     <IconUserFilled className='nav-icon' />
@@ -44,7 +43,7 @@ function NavBar() {
               ) : (
                 <>
                   <Link
-                    href={`/${username}/account`}
+                    href={`/${session.user.username}/account`}
                     title='Go to your account'
                   >
                     <IconUserFilled className='nav-icon' />

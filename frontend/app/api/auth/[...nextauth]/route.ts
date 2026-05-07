@@ -1,5 +1,3 @@
-import NextAuth from 'next-auth';
-
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers: [],
-});
+import { handlers } from '@/auth'; // Referring to the auth.ts we just created
+export const { GET, POST } = handlers;
+// export { auth as middleware } from '@/auth';

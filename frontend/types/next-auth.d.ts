@@ -3,9 +3,9 @@ import NextAuth from 'next-auth';
 declare module 'next-auth' {
   interface Session {
     user: {
-      id: string;
-      username: string;
-      role: 'CUSTOMER' | 'ARTIST';
+      id?: string;
+      username?: string;
+      role?: 'CUSTOMER' | 'ARTIST';
       name?: string | null;
       email?: string | null;
     };
