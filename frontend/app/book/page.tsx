@@ -73,21 +73,6 @@ export default function BookAppointmentPage() {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [error, setError] = useState('');
 
-  async function loadBaseData() {
-    try {
-      const [servicesRes, artistsRes] = await Promise.all([
-        axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/services`),
-        axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/artists`),
-      ]);
-
-      setServices(servicesRes.data);
-      setArtists(artistsRes.data);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to load booking data.');
-    }
-  }
-
   async function loadBookingOptions() {
     try {
       const response = await axios.get(
@@ -109,6 +94,23 @@ export default function BookAppointmentPage() {
   }
 
   useEffect(() => {
+    async function loadBaseData() {
+      try {
+        const servicesRes = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/services`,
+        );
+        const artistsRes = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/artists`,
+        );
+
+        setServices(servicesRes.data);
+        setArtists(artistsRes.data);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load booking data.');
+      }
+    }
+
     loadBaseData();
   }, []);
 
@@ -206,6 +208,11 @@ export default function BookAppointmentPage() {
 
     return date.toTimeString().slice(0, 8);
   }
+  const artistMap = useMemo(() => {
+    return Object.fromEntries(
+      artists.map((artist) => [artist.artistId, artist]),
+    );
+  }, [artists]);
 
   function openBookingModal(slot: BookingSlot) {
     setSelectedSlot(slot);
@@ -336,6 +343,9 @@ export default function BookAppointmentPage() {
 
                 <span className='booking-slot-meta'>
                   Artist: {slot.artistName}
+                </span>
+                <span className='booking-slot-meta'>
+                  Level: {artistMap[slot.artistId]?.skillLevel ?? 'Beginner'}
                 </span>
 
                 <span className='booking-slot-services'>
