@@ -11,17 +11,9 @@ interface Service {
 }
 
 function formatDuration(duration: number) {
-  if (duration < 60) {
-    return `${duration} min`;
-  }
-
-  if (duration === 60) {
-    return '1 hr';
-  }
-
-  if (duration % 60 === 0) {
-    return `${duration / 60} hr`;
-  }
+  if (duration < 60) return `${duration} min`;
+  if (duration === 60) return '1 hr';
+  if (duration % 60 === 0) return `${duration / 60} hr`;
 
   const hours = Math.floor(duration / 60);
   const minutes = duration % 60;
@@ -38,8 +30,8 @@ function ServiceCard({ service }: { service: Service }) {
           src={imageSrc}
           alt={service.type}
           className='service-image'
-          width={100}
-          height={100}
+          width={360}
+          height={180}
         />
       </div>
 

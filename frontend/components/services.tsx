@@ -37,26 +37,18 @@ function Services() {
     getAllServices();
   }, []);
 
-  if (loading) {
+  if (loading)
     return <div className='services-message'>Loading services...</div>;
-  }
-
-  if (error) {
-    return <div className='services-message'>{error}</div>;
-  }
+  if (error) return <div className='services-message'>{error}</div>;
 
   return (
     <section className='services-section'>
       <h2 className='services-title'>Service Types</h2>
 
       <div className='service-card-container'>
-        {services.length > 0 ? (
-          services.map((service) => (
-            <ServiceCard service={service} key={service.serviceId} />
-          ))
-        ) : (
-          <div className='services-message'>No services available.</div>
-        )}
+        {services.map((service) => (
+          <ServiceCard service={service} key={service.serviceId} />
+        ))}
       </div>
     </section>
   );
