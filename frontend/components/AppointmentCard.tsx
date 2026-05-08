@@ -18,9 +18,11 @@ type Appointment = {
   notes: string | null;
 };
 
-type AppointmentCardProps = {
+type Props = {
   appointment: Appointment;
   upcoming: boolean;
+  canEdit: boolean;
+  cancelLabel: 'Cancel' | 'Reject';
   onEdit: () => void;
   onCancel: () => void;
 };
@@ -28,9 +30,11 @@ type AppointmentCardProps = {
 export default function AppointmentCard({
   appointment,
   upcoming,
+  canEdit,
+  cancelLabel,
   onEdit,
   onCancel,
-}: AppointmentCardProps) {
+}: Props) {
   function formatTime(time: string) {
     const [hourString, minuteString] = time.split(':');
     const hour = Number(hourString);
@@ -65,6 +69,7 @@ export default function AppointmentCard({
         <p>
           <strong>Customer:</strong> {appointment.customerName}
         </p>
+
         {appointment.notes && (
           <p>
             <strong>Notes:</strong> {appointment.notes}
@@ -74,11 +79,14 @@ export default function AppointmentCard({
 
       {upcoming && (
         <div className='appointment-actions'>
-          <button className='appointment-secondary-button' onClick={onEdit}>
-            Edit
-          </button>
+          {canEdit && (
+            <button className='appointment-secondary-button' onClick={onEdit}>
+              Edit
+            </button>
+          )}
+
           <button className='appointment-danger-button' onClick={onCancel}>
-            Cancel
+            {cancelLabel}
           </button>
         </div>
       )}
