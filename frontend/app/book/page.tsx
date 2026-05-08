@@ -64,6 +64,7 @@ export default function BookAppointmentPage() {
   const [selectedServiceId, setSelectedServiceId] = useState('');
   const [selectedArtistId, setSelectedArtistId] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
 
   const [selectedSlot, setSelectedSlot] = useState<BookingSlot | null>(null);
   const [selectedModalServiceId, setSelectedModalServiceId] = useState('');
@@ -115,6 +116,29 @@ export default function BookAppointmentPage() {
     loadBookingOptions();
   }, [selectedServiceId, selectedArtistId]);
 
+  function formatTime(time: string) {
+    const [hourString, minuteString] = time.split(':');
+    const hour = Number(hourString);
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+
+    return `${displayHour}:${minuteString.padStart(2, '0')} ${period}`;
+  }
+
+  function timeToMinutes(time: string) {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
+
+  function makeDateTime(date: string, time: string) {
+    return new Date(`${date}T${time}`);
+  }
+
+  function isFutureSlot(slot: BookingSlot) {
+    const slotEndDateTime = makeDateTime(slot.date, slot.slotEndTime);
+    return slotEndDateTime > new Date();
+  }
+
   const bookingSlots = useMemo(() => {
     const grouped = new Map<number, BookingSlot>();
 
@@ -153,9 +177,17 @@ export default function BookAppointmentPage() {
   }, [bookingOptions]);
 
   const visibleSlots = useMemo(() => {
-    if (!selectedDate) return bookingSlots;
-    return bookingSlots.filter((slot) => slot.date === selectedDate);
-  }, [bookingSlots, selectedDate]);
+    return bookingSlots.filter((slot) => {
+      const matchesDate = !selectedDate || slot.date === selectedDate;
+
+      const matchesTime =
+        !selectedTime ||
+        (timeToMinutes(slot.slotStartTime) <= timeToMinutes(selectedTime) &&
+          timeToMinutes(slot.slotEndTime) > timeToMinutes(selectedTime));
+
+      return isFutureSlot(slot) && matchesDate && matchesTime;
+    });
+  }, [bookingSlots, selectedDate, selectedTime]);
 
   const selectedService = useMemo(() => {
     if (!selectedSlot || !selectedModalServiceId) return null;
@@ -225,7 +257,7 @@ export default function BookAppointmentPage() {
         <section className='booking-header'>
           <h1>Book an Appointment</h1>
           <p>
-            Filter by service, artist, or date. Then choose an available time
+            Filter by service, artist, date, or time. Then choose an available
             slot.
           </p>
         </section>
@@ -271,6 +303,15 @@ export default function BookAppointmentPage() {
               onChange={(event) => setSelectedDate(event.target.value)}
             />
           </label>
+
+          <label>
+            Time
+            <input
+              type='time'
+              value={selectedTime}
+              onChange={(event) => setSelectedTime(event.target.value)}
+            />
+          </label>
         </section>
 
         <section className='booking-options'>
@@ -289,7 +330,8 @@ export default function BookAppointmentPage() {
                 <span className='booking-slot-date'>{slot.date}</span>
 
                 <span className='booking-slot-time'>
-                  {slot.slotStartTime} - {slot.slotEndTime}
+                  {formatTime(slot.slotStartTime)} -{' '}
+                  {formatTime(slot.slotEndTime)}
                 </span>
 
                 <span className='booking-slot-meta'>
@@ -324,8 +366,9 @@ export default function BookAppointmentPage() {
                     <strong>Date:</strong> {selectedSlot.date}
                   </p>
                   <p>
-                    <strong>Available:</strong> {selectedSlot.slotStartTime} -{' '}
-                    {selectedSlot.slotEndTime}
+                    <strong>Available:</strong>{' '}
+                    {formatTime(selectedSlot.slotStartTime)} -{' '}
+                    {formatTime(selectedSlot.slotEndTime)}
                   </p>
                 </div>
 
@@ -373,6 +416,18 @@ export default function BookAppointmentPage() {
                     required
                   />
                 </label>
+
+                {appointmentStartTime && selectedService && (
+                  <p className='booking-time-preview'>
+                    Appointment time: {formatTime(appointmentStartTime)} -{' '}
+                    {formatTime(
+                      addMinutes(
+                        appointmentStartTime,
+                        selectedService.duration,
+                      ),
+                    )}
+                  </p>
+                )}
 
                 <label>
                   Notes

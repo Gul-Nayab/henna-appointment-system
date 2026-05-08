@@ -27,6 +27,15 @@ export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [error, setError] = useState<string>('');
 
+  function formatTime(time: string) {
+    const [hourString, minuteString] = time.split(':');
+    const hour = Number(hourString);
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour % 12 === 0 ? 12 : hour % 12;
+
+    return `${displayHour}:${minuteString.padStart(2, '0')} ${period}`;
+  }
+
   async function getUserAppointments() {
     if (!session?.user?.id || !session?.user?.role) return;
 
@@ -92,10 +101,11 @@ export default function AppointmentsPage() {
           <div>
             <h3>{appointment.serviceType}</h3>
             <p>
-              {appointment.date} • {appointment.startTime} -{' '}
-              {appointment.endTime}
+              {appointment.date} • {formatTime(appointment.startTime)} -{' '}
+              {formatTime(appointment.endTime)}
             </p>
           </div>
+
           <span
             className={`appointment-status ${appointment.appointmentStatus.toLowerCase()}`}
           >
