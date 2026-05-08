@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
 import '@/styles/book.css';
 import NavBar from '@/components/Navbar';
 
@@ -15,6 +17,7 @@ type Service = {
 
 type Artist = {
   artistId: number;
+  name: string;
   skillLevel: string;
   portfolioLink: string;
   bio: string;
@@ -33,8 +36,26 @@ type BookingOption = {
   slotEndTime: string;
 };
 
+type ServiceOption = {
+  serviceId: number;
+  type: string;
+  duration: number;
+  price: number;
+};
+
+type BookingSlot = {
+  slotId: number;
+  artistId: number;
+  artistName: string;
+  date: string;
+  slotStartTime: string;
+  slotEndTime: string;
+  services: ServiceOption[];
+};
+
 export default function BookAppointmentPage() {
   const { data: session } = useSession();
+  const router = useRouter();
 
   const [services, setServices] = useState<Service[]>([]);
   const [artists, setArtists] = useState<Artist[]>([]);
@@ -44,35 +65,46 @@ export default function BookAppointmentPage() {
   const [selectedArtistId, setSelectedArtistId] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
 
-  const [selectedOption, setSelectedOption] = useState<BookingOption | null>(
-    null,
-  );
+  const [selectedSlot, setSelectedSlot] = useState<BookingSlot | null>(null);
+  const [selectedModalServiceId, setSelectedModalServiceId] = useState('');
   const [appointmentStartTime, setAppointmentStartTime] = useState('');
   const [notes, setNotes] = useState('');
   const [confirmationOpen, setConfirmationOpen] = useState(false);
+  const [error, setError] = useState('');
 
   async function loadBaseData() {
-    const [servicesRes, artistsRes] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/services`),
-      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/artists`),
-    ]);
+    try {
+      const [servicesRes, artistsRes] = await Promise.all([
+        axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/services`),
+        axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/artists`),
+      ]);
 
-    setServices(await servicesRes.json());
-    setArtists(await artistsRes.json());
+      setServices(servicesRes.data);
+      setArtists(artistsRes.data);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load booking data.');
+    }
   }
 
   async function loadBookingOptions() {
-    const params = new URLSearchParams();
+    try {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/booking-options`,
+        {
+          params: {
+            artistId: selectedArtistId || undefined,
+            serviceId: selectedServiceId || undefined,
+          },
+          timeout: 5000,
+        },
+      );
 
-    if (selectedServiceId) params.set('serviceId', selectedServiceId);
-    if (selectedArtistId) params.set('artistId', selectedArtistId);
-
-    const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/booking-options?${params.toString()}`;
-
-    const res = await fetch(url);
-    const data = await res.json();
-
-    setBookingOptions(data);
+      setBookingOptions(response.data);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load available slots.');
+    }
   }
 
   useEffect(() => {
@@ -83,76 +115,129 @@ export default function BookAppointmentPage() {
     loadBookingOptions();
   }, [selectedServiceId, selectedArtistId]);
 
-  const visibleOptions = useMemo(() => {
-    if (!selectedDate) return bookingOptions;
-    return bookingOptions.filter((option) => option.date === selectedDate);
-  }, [bookingOptions, selectedDate]);
+  const bookingSlots = useMemo(() => {
+    const grouped = new Map<number, BookingSlot>();
+
+    for (const option of bookingOptions) {
+      const service: ServiceOption = {
+        serviceId: option.serviceId,
+        type: option.serviceType,
+        duration: option.duration,
+        price: option.price,
+      };
+
+      const existingSlot = grouped.get(option.slotId);
+
+      if (!existingSlot) {
+        grouped.set(option.slotId, {
+          slotId: option.slotId,
+          artistId: option.artistId,
+          artistName: option.artistName,
+          date: option.date,
+          slotStartTime: option.slotStartTime,
+          slotEndTime: option.slotEndTime,
+          services: [service],
+        });
+      } else {
+        const serviceAlreadyAdded = existingSlot.services.some(
+          (existingService) => existingService.serviceId === service.serviceId,
+        );
+
+        if (!serviceAlreadyAdded) {
+          existingSlot.services.push(service);
+        }
+      }
+    }
+
+    return Array.from(grouped.values());
+  }, [bookingOptions]);
+
+  const visibleSlots = useMemo(() => {
+    if (!selectedDate) return bookingSlots;
+    return bookingSlots.filter((slot) => slot.date === selectedDate);
+  }, [bookingSlots, selectedDate]);
+
+  const selectedService = useMemo(() => {
+    if (!selectedSlot || !selectedModalServiceId) return null;
+
+    return selectedSlot.services.find(
+      (service) => service.serviceId === Number(selectedModalServiceId),
+    );
+  }, [selectedSlot, selectedModalServiceId]);
 
   function addMinutes(time: string, minutes: number) {
     const [hours, mins] = time.split(':').map(Number);
     const date = new Date();
+
     date.setHours(hours, mins, 0, 0);
     date.setMinutes(date.getMinutes() + minutes);
 
     return date.toTimeString().slice(0, 8);
   }
 
-  function openBookingModal(option: BookingOption) {
-    setSelectedOption(option);
-    setAppointmentStartTime(option.slotStartTime);
+  function openBookingModal(slot: BookingSlot) {
+    setSelectedSlot(slot);
+    setAppointmentStartTime(slot.slotStartTime);
     setNotes('');
+
+    if (selectedServiceId) {
+      setSelectedModalServiceId(selectedServiceId);
+    } else {
+      setSelectedModalServiceId('');
+    }
   }
 
   async function submitAppointment(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!selectedOption || !session?.user?.id) return;
+    if (!selectedSlot || !selectedService || !session?.user?.id) return;
 
-    const endTime = addMinutes(appointmentStartTime, selectedOption.duration);
+    const endTime = addMinutes(appointmentStartTime, selectedService.duration);
 
-    const payload = {
-      customerId: Number(session.user.id),
-      serviceId: selectedOption.serviceId,
-      slotId: selectedOption.slotId,
-      startTime: appointmentStartTime,
-      endTime,
-      notes,
-    };
+    try {
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/appointments`,
+        {
+          customerId: Number(session.user.id),
+          serviceId: selectedService.serviceId,
+          slotId: selectedSlot.slotId,
+          startTime: appointmentStartTime,
+          endTime,
+          notes,
+        },
+        { timeout: 5000 },
+      );
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/appointments`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      },
-    );
-
-    if (!res.ok) {
+      setSelectedSlot(null);
+      setConfirmationOpen(true);
+      await loadBookingOptions();
+    } catch (err) {
+      console.error(err);
       alert('Could not book appointment.');
-      return;
     }
-
-    setSelectedOption(null);
-    setConfirmationOpen(true);
-    await loadBookingOptions();
   }
 
   return (
     <>
       <NavBar />
+
       <main className='booking-page'>
         <section className='booking-header'>
           <h1>Book an Appointment</h1>
-          <p>Select a service, artist, or time slot to find availability.</p>
+          <p>
+            Filter by service, artist, or date. Then choose an available time
+            slot.
+          </p>
         </section>
+
+        {error && <p className='booking-error'>{error}</p>}
 
         <section className='booking-filters'>
           <label>
             Service
             <select
               value={selectedServiceId}
-              onChange={(e) => setSelectedServiceId(e.target.value)}
+              onChange={(event) => setSelectedServiceId(event.target.value)}
             >
               <option value=''>All services</option>
               {services.map((service) => (
@@ -167,12 +252,12 @@ export default function BookAppointmentPage() {
             Artist
             <select
               value={selectedArtistId}
-              onChange={(e) => setSelectedArtistId(e.target.value)}
+              onChange={(event) => setSelectedArtistId(event.target.value)}
             >
               <option value=''>All artists</option>
               {artists.map((artist) => (
                 <option key={artist.artistId} value={artist.artistId}>
-                  Artist #{artist.artistId}
+                  {artist.name}
                 </option>
               ))}
             </select>
@@ -183,42 +268,49 @@ export default function BookAppointmentPage() {
             <input
               type='date'
               value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
+              onChange={(event) => setSelectedDate(event.target.value)}
             />
           </label>
         </section>
 
         <section className='booking-options'>
-          {visibleOptions.length === 0 ? (
+          {visibleSlots.length === 0 ? (
             <p className='booking-empty'>
               No available slots match your filters.
             </p>
           ) : (
-            visibleOptions.map((option) => (
+            visibleSlots.map((slot) => (
               <button
-                key={`${option.slotId}-${option.serviceId}`}
+                key={slot.slotId}
+                type='button'
                 className='booking-slot-card'
-                onClick={() => openBookingModal(option)}
+                onClick={() => openBookingModal(slot)}
               >
-                <span className='booking-slot-date'>{option.date}</span>
+                <span className='booking-slot-date'>{slot.date}</span>
+
                 <span className='booking-slot-time'>
-                  {option.slotStartTime} - {option.slotEndTime}
+                  {slot.slotStartTime} - {slot.slotEndTime}
                 </span>
+
                 <span className='booking-slot-meta'>
-                  {option.serviceType} with {option.artistName}
+                  Artist: {slot.artistName}
                 </span>
-                <span className='booking-slot-price'>${option.price}</span>
+
+                <span className='booking-slot-services'>
+                  Services offered:{' '}
+                  {slot.services.map((service) => service.type).join(', ')}
+                </span>
               </button>
             ))
           )}
         </section>
 
-        {selectedOption && (
+        {selectedSlot && (
           <div className='booking-modal-overlay'>
             <div className='booking-modal'>
               <div className='booking-modal-header'>
                 <h2>Book Your Appointment</h2>
-                <button type='button' onClick={() => setSelectedOption(null)}>
+                <button type='button' onClick={() => setSelectedSlot(null)}>
                   ×
                 </button>
               </div>
@@ -226,19 +318,46 @@ export default function BookAppointmentPage() {
               <form onSubmit={submitAppointment} className='booking-modal-form'>
                 <div className='booking-summary'>
                   <p>
-                    <strong>Service:</strong> {selectedOption.serviceType}
+                    <strong>Artist:</strong> {selectedSlot.artistName}
                   </p>
                   <p>
-                    <strong>Artist:</strong> {selectedOption.artistName}
+                    <strong>Date:</strong> {selectedSlot.date}
                   </p>
                   <p>
-                    <strong>Date:</strong> {selectedOption.date}
-                  </p>
-                  <p>
-                    <strong>Available:</strong> {selectedOption.slotStartTime} -{' '}
-                    {selectedOption.slotEndTime}
+                    <strong>Available:</strong> {selectedSlot.slotStartTime} -{' '}
+                    {selectedSlot.slotEndTime}
                   </p>
                 </div>
+
+                <label>
+                  Service
+                  <select
+                    value={selectedModalServiceId}
+                    onChange={(event) =>
+                      setSelectedModalServiceId(event.target.value)
+                    }
+                    required
+                  >
+                    <option value=''>Choose a service</option>
+                    {selectedSlot.services.map((service) => (
+                      <option key={service.serviceId} value={service.serviceId}>
+                        {service.type}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                {selectedService && (
+                  <div className='booking-service-preview'>
+                    <p>
+                      <strong>Duration:</strong> {selectedService.duration}{' '}
+                      minutes
+                    </p>
+                    <p>
+                      <strong>Price:</strong> ${selectedService.price}
+                    </p>
+                  </div>
+                )}
 
                 <label>
                   Start time
@@ -246,11 +365,11 @@ export default function BookAppointmentPage() {
                     type='time'
                     step='60'
                     value={appointmentStartTime.slice(0, 5)}
-                    onChange={(e) =>
-                      setAppointmentStartTime(`${e.target.value}:00`)
+                    onChange={(event) =>
+                      setAppointmentStartTime(`${event.target.value}:00`)
                     }
-                    min={selectedOption.slotStartTime.slice(0, 5)}
-                    max={selectedOption.slotEndTime.slice(0, 5)}
+                    min={selectedSlot.slotStartTime.slice(0, 5)}
+                    max={selectedSlot.slotEndTime.slice(0, 5)}
                     required
                   />
                 </label>
@@ -259,12 +378,16 @@ export default function BookAppointmentPage() {
                   Notes
                   <textarea
                     value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
+                    onChange={(event) => setNotes(event.target.value)}
                     placeholder='Add design notes or requests...'
                   />
                 </label>
 
-                <button type='submit' className='booking-submit-button'>
+                <button
+                  type='submit'
+                  className='booking-submit-button'
+                  disabled={!selectedService}
+                >
                   Book Appointment
                 </button>
               </form>
@@ -277,7 +400,12 @@ export default function BookAppointmentPage() {
             <div className='booking-confirmation'>
               <h2>Appointment Booked!</h2>
               <p>Your appointment has been booked successfully.</p>
-              <button onClick={() => setConfirmationOpen(false)}>Close</button>
+              <button
+                type='button'
+                onClick={() => router.push('/appointments')}
+              >
+                OK
+              </button>
             </div>
           </div>
         )}
