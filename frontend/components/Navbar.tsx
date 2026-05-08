@@ -1,21 +1,18 @@
 'use client';
 
 import { signOut, useSession } from 'next-auth/react';
-import { useParams, useRouter } from 'next/navigation';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import {
   IconCalendarClock,
   IconCalendarWeek,
-  IconLayout,
   IconLogout,
   IconUserFilled,
 } from '@tabler/icons-react';
 import '@/styles/navbar.css';
 
 function NavBar() {
-  const router = useRouter();
   const { data: session, status } = useSession();
 
   return (
@@ -37,17 +34,10 @@ function NavBar() {
           </Link>
           {status === 'authenticated' ? (
             <div className='nav-actions'>
-              <Link href={'/dashboard'} title='Go to your dashboard'>
-                <IconLayout className='nav-icon' />
-              </Link>
-              {session.user.role === 'CUSTOMER' ? (
-                <>
-                  <Link href={`/book`} title='Book an appointment'>
-                    <IconCalendarWeek className='nav-icon' />
-                  </Link>
-                </>
-              ) : (
-                <></>
+              {session.user.role === 'CUSTOMER' && (
+                <Link href={`/book`} title='Book an appointment'>
+                  <IconCalendarWeek className='nav-icon' />
+                </Link>
               )}
               <Link href={`/appointments`} title='See all your appointments'>
                 <IconCalendarClock className='nav-icon' />

@@ -25,7 +25,7 @@ export default function LoginPage() {
       console.error(res.error);
       return;
     }
-    router.push(`/dashboard`);
+    router.push(`/${username}/account`);
   };
 
   return (
