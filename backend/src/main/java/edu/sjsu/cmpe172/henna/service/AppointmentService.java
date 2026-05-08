@@ -77,10 +77,29 @@ public class AppointmentService {
             throw new RuntimeException("Cancelled appointments cannot be updated.");
         }
 
-        availabilitySlotService.releaseBookedSlotAndMerge(existing.getSlotId());
+        Integer oldSlotId = existing.getSlotId();
+        Integer requestedSlotId = updatedAppointment.getSlotId();
+
+        AvailabilitySlot requestedSlotBeforeRelease = availabilitySlotService.getSlotById(requestedSlotId);
+
+        AvailabilitySlot releasedMergedSlot = availabilitySlotService.releaseBookedSlotAndMerge(oldSlotId);
+
+        Integer slotIdToBook = requestedSlotId;
+
+        boolean requestedSlotWasOldSlot = requestedSlotId.equals(oldSlotId);
+
+        boolean requestedSlotWasMergedIntoOldSlot = requestedSlotBeforeRelease.getArtistId()
+                .equals(releasedMergedSlot.getArtistId())
+                && requestedSlotBeforeRelease.getDate().equals(releasedMergedSlot.getDate())
+                && !requestedSlotBeforeRelease.getStartTime().isBefore(releasedMergedSlot.getStartTime())
+                && !requestedSlotBeforeRelease.getEndTime().isAfter(releasedMergedSlot.getEndTime());
+
+        if (requestedSlotWasOldSlot || requestedSlotWasMergedIntoOldSlot) {
+            slotIdToBook = releasedMergedSlot.getSlotId();
+        }
 
         AvailabilitySlot newlyBookedSlot = availabilitySlotService.bookWithinSlot(
-                updatedAppointment.getSlotId(),
+                slotIdToBook,
                 updatedAppointment.getStartTime(),
                 updatedAppointment.getEndTime());
 
