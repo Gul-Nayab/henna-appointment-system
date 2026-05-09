@@ -26,6 +26,7 @@ function Artists() {
           { timeout: 5000 },
         );
         setArtists(response.data);
+        console.log(response.data);
       } catch (err) {
         console.error(err);
         setError('Failed to load artists.');

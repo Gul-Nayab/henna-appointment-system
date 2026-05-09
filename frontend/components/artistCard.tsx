@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 
 type Artist = {
   artistId: number;
@@ -20,8 +21,8 @@ function ArtistCard({ artist }: { artist: Artist }) {
           src={imageSrc}
           alt={artist.name}
           className='artist-image'
-          width={180}
-          height={180}
+          width={300}
+          height={300}
         />
       </div>
 
@@ -31,6 +32,11 @@ function ArtistCard({ artist }: { artist: Artist }) {
 
         <p className='artist-label'>Skill Level</p>
         <p className='artist-skill'>{artist.skillLevel}</p>
+
+        <p className='artist-label'>Skill Level</p>
+        <p className='artist-skill'>
+          <Link href={artist.portfolioLink}>{artist.portfolioLink}</Link>
+        </p>
 
         {artist.bio && (
           <>
