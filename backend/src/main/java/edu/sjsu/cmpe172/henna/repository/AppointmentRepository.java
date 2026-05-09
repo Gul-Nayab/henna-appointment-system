@@ -13,6 +13,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Intege
 
     List<Appointment> findByArtistId(Integer artistId);
 
+    void deleteByCustomerId(Integer customerId);
+
+    void deleteByArtistId(Integer artistId);
+
     @Query("""
                 SELECT new edu.sjsu.cmpe172.henna.dto.AppointmentDetailsResponse(
                     a.apptId,

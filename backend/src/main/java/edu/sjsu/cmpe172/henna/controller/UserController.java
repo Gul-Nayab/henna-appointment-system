@@ -5,6 +5,7 @@ import edu.sjsu.cmpe172.henna.dto.UpdateUserRequest;
 import edu.sjsu.cmpe172.henna.dto.UserResponse;
 import edu.sjsu.cmpe172.henna.service.UserService;
 import org.springframework.web.bind.annotation.*;
+import edu.sjsu.cmpe172.henna.dto.UpdateAccountRequest;
 
 import java.util.List;
 
@@ -37,6 +38,18 @@ public class UserController {
     @PutMapping("/{id}")
     public UserResponse updateUser(@PathVariable Integer id, @RequestBody UpdateUserRequest request) {
         return service.updateUser(id, request);
+    }
+
+    @PutMapping("/{id}/account")
+    public UserResponse updateAccount(
+            @PathVariable Integer id,
+            @RequestBody UpdateAccountRequest request) {
+        return service.updateAccount(id, request);
+    }
+
+    @DeleteMapping("/{id}/account")
+    public void deleteAccount(@PathVariable Integer id) {
+        service.deleteAccount(id);
     }
 
     @DeleteMapping("/{id}")

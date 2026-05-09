@@ -4,6 +4,7 @@ import edu.sjsu.cmpe172.henna.dto.*;
 import edu.sjsu.cmpe172.henna.model.Artist;
 import edu.sjsu.cmpe172.henna.model.Customer;
 import edu.sjsu.cmpe172.henna.model.User;
+import edu.sjsu.cmpe172.henna.repository.AppointmentRepository;
 import edu.sjsu.cmpe172.henna.repository.ArtistRepository;
 import edu.sjsu.cmpe172.henna.repository.CustomerRepository;
 import edu.sjsu.cmpe172.henna.repository.UserRepository;
@@ -11,6 +12,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import edu.sjsu.cmpe172.henna.model.User;
+import edu.sjsu.cmpe172.henna.model.Artist;
 import java.util.List;
 
 @Service
@@ -19,12 +22,15 @@ public class UserService {
     private final UserRepository userRepo;
     private final CustomerRepository customerRepo;
     private final ArtistRepository artistRepo;
+    private final AppointmentRepository appointmentRepo;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public UserService(UserRepository userRepo, CustomerRepository customerRepo, ArtistRepository artistRepo) {
+    public UserService(UserRepository userRepo, CustomerRepository customerRepo, ArtistRepository artistRepo,
+            AppointmentRepository appointmentRepo) {
         this.userRepo = userRepo;
         this.customerRepo = customerRepo;
         this.artistRepo = artistRepo;
+        this.appointmentRepo = appointmentRepo;
     }
 
     public List<UserResponse> getAllUsers() {
@@ -178,6 +184,48 @@ public class UserService {
         userRepo.deleteById(artistId);
     }
 
+    @Transactional
+    public UserResponse updateAccount(Integer userId, UpdateAccountRequest request) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found."));
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName());
+        }
+
+        user.setEmail(request.getEmail());
+        user.setPhoneNumber(request.getPhoneNumber());
+
+        userRepo.save(user);
+
+        if (artistRepo.existsById(userId)) {
+            Artist artist = artistRepo.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Artist not found."));
+
+            artist.setBio(request.getBio());
+            artist.setPortfolioLink(request.getPortfolioLink());
+
+            artistRepo.save(artist);
+        }
+
+        return toUserResponse(user);
+    }
+
+    @Transactional
+    public void deleteAccount(Integer userId) {
+        if (artistRepo.existsById(userId)) {
+            appointmentRepo.deleteByArtistId(userId);
+            artistRepo.deleteById(userId);
+        }
+
+        if (customerRepo.existsById(userId)) {
+            appointmentRepo.deleteByCustomerId(userId);
+            customerRepo.deleteById(userId);
+        }
+
+        userRepo.deleteById(userId);
+    }
+
     private void validateBaseUser(String username, String password, String name, String email, String phoneNumber) {
         if (username == null || username.isBlank()) {
             throw new RuntimeException("Username is required.");
@@ -234,4 +282,5 @@ public class UserService {
                 user.getPhoneNumber(),
                 getRole(user.getUserId()));
     }
+
 }
