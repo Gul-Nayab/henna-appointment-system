@@ -73,6 +73,9 @@ export default function BookAppointmentPage() {
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [error, setError] = useState('');
 
+  const [notificationStatus, setNotificationStatus] = useState('');
+  const [notificationMessage, setNotificationMessage] = useState('');
+
   async function loadBookingOptions() {
     try {
       const response = await axios.get(
@@ -234,7 +237,7 @@ export default function BookAppointmentPage() {
     const endTime = addMinutes(appointmentStartTime, selectedService.duration);
 
     try {
-      await axios.post(
+      const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/appointments`,
         {
           customerId: Number(session.user.id),
@@ -246,6 +249,11 @@ export default function BookAppointmentPage() {
         },
         { timeout: 5000 },
       );
+
+      console.log('Booking response:', response.data);
+
+      setNotificationStatus(response.data.notificationStatus);
+      setNotificationMessage(response.data.notificationMessage);
 
       setSelectedSlot(null);
       setConfirmationOpen(true);
@@ -465,6 +473,9 @@ export default function BookAppointmentPage() {
             <div className='booking-confirmation'>
               <h2>Appointment Booked!</h2>
               <p>Your appointment has been booked successfully.</p>
+              <br />
+              <p> Notification Sent: {notificationStatus}</p>
+              <p> {notificationMessage}</p>
               <button
                 type='button'
                 onClick={() => router.push('/appointments')}

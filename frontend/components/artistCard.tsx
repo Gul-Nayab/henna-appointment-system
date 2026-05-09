@@ -33,7 +33,7 @@ function ArtistCard({ artist }: { artist: Artist }) {
         <p className='artist-label'>Skill Level</p>
         <p className='artist-skill'>{artist.skillLevel}</p>
 
-        <p className='artist-label'>Skill Level</p>
+        <p className='artist-label'>Portfolio</p>
         <p className='artist-skill'>
           <Link href={artist.portfolioLink}>{artist.portfolioLink}</Link>
         </p>
