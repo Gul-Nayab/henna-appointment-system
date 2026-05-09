@@ -58,7 +58,9 @@ export default function AppointmentCard({
         <span
           className={`appointment-status ${appointment.appointmentStatus.toLowerCase()}`}
         >
-          {appointment.appointmentStatus}
+          {appointment.appointmentStatus === 'BOOKED' && !upcoming
+            ? 'COMPLETED'
+            : appointment.appointmentStatus}
         </span>
       </div>
 
