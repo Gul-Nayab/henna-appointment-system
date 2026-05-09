@@ -4,9 +4,11 @@ import '@/styles/home.css';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { signIn, useSession } from 'next-auth/react';
 
 export default function Home() {
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   return (
     <main className='home-page'>
@@ -28,13 +30,25 @@ export default function Home() {
           <div className='nav-actions'>
             <button
               className='nav-btn btn-dark'
-              onClick={() => router.push('/login')}
+              onClick={() => {
+                if (status === 'authenticated') {
+                  router.push(`/${session.user.username}/account`);
+                } else {
+                  router.push('/login');
+                }
+              }}
             >
               Login
             </button>
             <button
               className='nav-btn btn-light'
-              onClick={() => router.push('/signup')}
+              onClick={() => {
+                if (status === 'authenticated') {
+                  router.push(`/${session.user.username}/account`);
+                } else {
+                  router.push('/signup');
+                }
+              }}
             >
               Sign Up
             </button>
@@ -45,7 +59,13 @@ export default function Home() {
           <h1>Book a Henna Appointment for All Your Events</h1>
           <button
             className='hero-btn btn-dark'
-            onClick={() => router.push('/login')}
+            onClick={() => {
+              if (status === 'authenticated') {
+                router.push(`/book`);
+              } else {
+                router.push('/login');
+              }
+            }}
           >
             Book
           </button>
@@ -64,7 +84,13 @@ export default function Home() {
             <button
               type='button'
               className='details-btn'
-              onClick={() => router.push('/login')}
+              onClick={() => {
+                if (status === 'authenticated') {
+                  router.push(`/book`);
+                } else {
+                  router.push('/login');
+                }
+              }}
             >
               View Availability
             </button>
@@ -99,7 +125,13 @@ export default function Home() {
             <button
               type='button'
               className='details-btn'
-              onClick={() => router.push('/signup')}
+              onClick={() => {
+                if (status === 'authenticated') {
+                  router.push(`/${session.user.username}/account`);
+                } else {
+                  router.push('/signup');
+                }
+              }}
             >
               Sign Up
             </button>

@@ -21,7 +21,7 @@ async function getUserFromDb(username: string, password: string) {
 
     if (!response.ok) return null;
 
-    const dbUser = JSON.parse(text) as DbUser;
+    const dbUser = (await response.json()) as DbUser;
 
     if (!dbUser?.password) return null;
 
@@ -35,7 +35,6 @@ async function getUserFromDb(username: string, password: string) {
     return null;
   }
 }
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET,
   session: {
