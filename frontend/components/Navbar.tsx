@@ -34,8 +34,12 @@ function NavBar() {
           </Link>
           {status === 'authenticated' ? (
             <div className='nav-actions'>
-              {session.user.role === 'CUSTOMER' && (
+              {session.user.role === 'CUSTOMER' ? (
                 <Link href={`/book`} title='Book an appointment'>
+                  <IconCalendarWeek className='nav-icon' />
+                </Link>
+              ) : (
+                <Link href={`/availability`} title='View your availability'>
                   <IconCalendarWeek className='nav-icon' />
                 </Link>
               )}
