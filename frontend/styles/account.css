@@ -1,0 +1,129 @@
+.account-page {
+  min-height: 100vh;
+  padding: 48px;
+  background: var(--background);
+}
+
+.account-hero {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 32px;
+  margin-bottom: 28px;
+}
+
+.account-kicker {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #777;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.account-hero h1 {
+  font-size: 2.1rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  color: #111;
+}
+
+.account-hero p {
+  color: #666;
+  line-height: 1.5;
+}
+
+.account-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.account-action-card {
+  text-align: left;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 22px;
+  min-height: 150px;
+}
+
+.account-action-card:hover {
+  transform: translateY(-3px);
+  background: #fafafa;
+}
+
+.account-action-card.primary {
+  background: #2c2c2c;
+  color: white;
+}
+
+.account-action-card span {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+}
+
+.account-action-card p {
+  color: #666;
+  line-height: 1.5;
+}
+
+.account-action-card.primary p {
+  color: #e6e6e6;
+}
+
+.account-settings-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.account-settings-card h2 {
+  font-size: 1.35rem;
+  margin-bottom: 18px;
+}
+
+.account-settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.account-secondary-button,
+.account-danger-button {
+  padding: 11px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.account-secondary-button {
+  background: #eeeeee;
+  color: #111;
+}
+
+.account-danger-button {
+  background: #2c2c2c;
+  color: #fff;
+}
+
+.account-message {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 18px;
+  border-radius: 10px;
+  color: #666;
+}
+
+@media (max-width: 850px) {
+  .account-page {
+    padding: 28px;
+  }
+
+  .account-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
