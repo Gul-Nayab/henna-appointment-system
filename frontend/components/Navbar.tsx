@@ -7,6 +7,7 @@ import Image from 'next/image';
 import {
   IconCalendarClock,
   IconCalendarWeek,
+  IconFileSettings,
   IconLogout,
   IconUserFilled,
 } from '@tabler/icons-react';
@@ -45,6 +46,9 @@ function NavBar() {
               )}
               <Link href={`/appointments`} title='See all your appointments'>
                 <IconCalendarClock className='nav-icon' />
+              </Link>
+              <Link href={'/reference'} title='View Reference Page'>
+                <IconFileSettings className='nav-icon' />
               </Link>
               <Link
                 href={`/${session.user.username}/account`}

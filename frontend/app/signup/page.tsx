@@ -147,6 +147,7 @@ export default function SignUpPage() {
               placeholder='Email address'
               value={form.email}
               onChange={updateField}
+              required
             />
           </div>
 
