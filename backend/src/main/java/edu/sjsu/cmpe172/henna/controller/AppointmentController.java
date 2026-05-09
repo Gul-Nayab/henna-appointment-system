@@ -1,5 +1,6 @@
 package edu.sjsu.cmpe172.henna.controller;
 
+import edu.sjsu.cmpe172.henna.dto.AppointmentBookingResponse;
 import edu.sjsu.cmpe172.henna.dto.AppointmentDetailsResponse;
 import edu.sjsu.cmpe172.henna.model.Appointment;
 import edu.sjsu.cmpe172.henna.service.AppointmentService;
@@ -39,7 +40,7 @@ public class AppointmentController {
     }
 
     @PostMapping("/appointments")
-    public Appointment createAppointment(@RequestBody Appointment appointment) {
+    public AppointmentBookingResponse createAppointment(@RequestBody Appointment appointment) {
         return service.createAppointment(appointment);
     }
 

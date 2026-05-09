@@ -3,9 +3,18 @@ package edu.sjsu.cmpe172.henna.service;
 import edu.sjsu.cmpe172.henna.model.Appointment;
 import edu.sjsu.cmpe172.henna.model.AvailabilitySlot;
 import edu.sjsu.cmpe172.henna.repository.AppointmentRepository;
+import edu.sjsu.cmpe172.henna.repository.UserRepository;
 import edu.sjsu.cmpe172.henna.dto.AppointmentDetailsResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import edu.sjsu.cmpe172.henna.dto.AppointmentBookingResponse;
+import edu.sjsu.cmpe172.henna.dto.NotificationRequest;
+import edu.sjsu.cmpe172.henna.dto.NotificationResponse;
+import edu.sjsu.cmpe172.henna.model.User;
+import edu.sjsu.cmpe172.henna.repository.UserRepository;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -14,12 +23,18 @@ public class AppointmentService {
 
     private final AppointmentRepository appointmentRepo;
     private final AvailabilitySlotService availabilitySlotService;
+    private final UserRepository userRepo;
+    private final RestTemplate restTemplate;
 
     public AppointmentService(
             AppointmentRepository appointmentRepo,
-            AvailabilitySlotService availabilitySlotService) {
+            AvailabilitySlotService availabilitySlotService,
+            UserRepository userRepo,
+            RestTemplate restTemplate) {
         this.appointmentRepo = appointmentRepo;
         this.availabilitySlotService = availabilitySlotService;
+        this.userRepo = userRepo;
+        this.restTemplate = restTemplate;
     }
 
     public List<Appointment> getAllAppointments() {
@@ -48,7 +63,7 @@ public class AppointmentService {
     }
 
     @Transactional
-    public Appointment createAppointment(Appointment appointment) {
+    public AppointmentBookingResponse createAppointment(Appointment appointment) {
         if (appointment.getSlotId() == null) {
             throw new RuntimeException("slotId is required.");
         }
@@ -66,7 +81,25 @@ public class AppointmentService {
             appointment.setAppointmentStatus("BOOKED");
         }
 
-        return appointmentRepo.save(appointment);
+        Appointment savedAppointment = appointmentRepo.save(appointment);
+
+        NotificationResponse notificationResponse = sendMockBookingNotification(savedAppointment);
+
+        String notificationStatus = "UNKNOWN";
+        String channelUsed = null;
+        String message = "No notification response.";
+
+        if (notificationResponse != null) {
+            notificationStatus = notificationResponse.getStatus();
+            channelUsed = notificationResponse.getChannelUsed();
+            message = notificationResponse.getMessage();
+        }
+
+        return new AppointmentBookingResponse(
+                savedAppointment,
+                notificationStatus,
+                channelUsed,
+                message);
     }
 
     @Transactional
@@ -134,5 +167,49 @@ public class AppointmentService {
     public void hardDeleteAppointment(Integer appointmentId) {
         Appointment existing = getAppointmentById(appointmentId);
         appointmentRepo.delete(existing);
+    }
+
+    private NotificationResponse sendMockBookingNotification(Appointment appointment) {
+        try {
+            User customer = userRepo.findById(appointment.getCustomerId())
+                    .orElseThrow(() -> new RuntimeException("Customer user not found."));
+
+            User artist = userRepo.findById(appointment.getArtistId())
+                    .orElseThrow(() -> new RuntimeException("Artist user not found."));
+
+            NotificationRequest request = new NotificationRequest();
+            request.setAppointmentId(appointment.getApptId());
+            request.setCustomerName(customer.getName());
+            request.setArtistName(artist.getName());
+            request.setDate(appointment.getDate().toString());
+            request.setStartTime(appointment.getStartTime().toString());
+            request.setEndTime(appointment.getEndTime().toString());
+            request.setPhoneNumber(customer.getPhoneNumber());
+            request.setEmail(customer.getEmail());
+
+            // Mock choice:
+            // If phone number exists, pretend they opted into texts.
+            // Otherwise, email is used.
+            request.setTextOptIn(customer.getPhoneNumber() != null && !customer.getPhoneNumber().isBlank());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<NotificationRequest> entity = new HttpEntity<>(request, headers);
+
+            ResponseEntity<NotificationResponse> response = restTemplate.postForEntity(
+                    "http://localhost:8080/api/mock-notifications/confirm",
+                    entity,
+                    NotificationResponse.class);
+
+            return response.getBody();
+        } catch (Exception error) {
+            System.out.println("Mock notification failed: " + error.getMessage());
+
+            return new NotificationResponse(
+                    "FAILED",
+                    "NONE",
+                    "Appointment booked, but mock notification failed.");
+        }
     }
 }
